@@ -30,9 +30,9 @@ jobs:
 
       - name: Extract Android project
         run: |
-          test -f officezen-source.zip
+          if [ -f officezen-source.zip ]; then SOURCE_ZIP=officezen-source.zip; elif [ -f untitled.zip ]; then SOURCE_ZIP=untitled.zip; else echo 'Source ZIP not found'; exit 1; fi
           mkdir -p android-project
-          unzip -q officezen-source.zip -d android-project
+          unzip -q "$SOURCE_ZIP" -d android-project
           test -f android-project/settings.gradle.kts
           test -f android-project/app/build.gradle.kts
 
