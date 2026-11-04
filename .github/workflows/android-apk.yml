@@ -6,6 +6,7 @@ on:
     paths:
       - 'officezen-source.zip'
       - 'untitled.zip'
+      - 'officezen-fixes.patch.gz.b64'
       - '.github/workflows/android-apk.yml'
 
 permissions:
