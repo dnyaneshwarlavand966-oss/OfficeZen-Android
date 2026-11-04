@@ -68,3 +68,5 @@ jobs:
           name: OfficeZen-debug-apk
           path: ${{ steps.project.outputs.project_dir }}/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
+# Build verification refresh: keep APK pipeline ready for the current OfficeZen source.
