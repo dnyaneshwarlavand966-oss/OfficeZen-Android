@@ -49,6 +49,7 @@ jobs:
           base64 -d officezen-fixes.patch.gz.b64 | gzip -dc > /tmp/officezen-fixes.patch
           patch --dry-run -d "${{ steps.project.outputs.project_dir }}" -p1 < /tmp/officezen-fixes.patch
           patch -d "${{ steps.project.outputs.project_dir }}" -p1 < /tmp/officezen-fixes.patch
+          sed -i 's/^                calendar.get(java.util.Calendar.HOUR_OF_DAY) \* 60 + calendar.get(java.util.Calendar.MINUTE) > 630$/                return calendar.get(java.util.Calendar.HOUR_OF_DAY) * 60 + calendar.get(java.util.Calendar.MINUTE) > 630/' "${{ steps.project.outputs.project_dir }}/app/src/main/java/com/example/ui/screens/ReportsScreen.kt"
 
       - name: Create CI debug keystore
         working-directory: ${{ steps.project.outputs.project_dir }}
