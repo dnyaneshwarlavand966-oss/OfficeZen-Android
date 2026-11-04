@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'officezen-source.zip'
+      - 'untitled.zip'
       - '.github/workflows/android-apk.yml'
 
 permissions:
@@ -23,33 +24,39 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.3.1'
 
       - name: Extract Android project
+        id: project
         run: |
           if [ -f officezen-source.zip ]; then SOURCE_ZIP=officezen-source.zip; elif [ -f untitled.zip ]; then SOURCE_ZIP=untitled.zip; else echo 'Source ZIP not found'; exit 1; fi
-          mkdir -p android-project
-          unzip -q "$SOURCE_ZIP" -d android-project
-          test -f android-project/settings.gradle.kts
-          test -f android-project/app/build.gradle.kts
+          mkdir -p extracted
+          unzip -q "$SOURCE_ZIP" -d extracted
+          PROJECT_DIR="$(find extracted -type f -name settings.gradle.kts -printf '%h\n' | head -n 1)"
+          if [ -z "$PROJECT_DIR" ]; then echo 'settings.gradle.kts not found in source archive'; exit 1; fi
+          test -f "$PROJECT_DIR/app/build.gradle.kts"
+          echo "project_dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
 
       - name: Create CI debug keystore
-        working-directory: android-project
+        working-directory: ${{ steps.project.outputs.project_dir }}
         run: |
           if [ ! -f debug.keystore ]; then
             keytool -genkeypair -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           fi
 
       - name: Build debug APK
-        working-directory: android-project
+        working-directory: ${{ steps.project.outputs.project_dir }}
         run: gradle --no-daemon assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: OfficeZen-debug-apk
-          path: android-project/app/build/outputs/apk/debug/*.apk
+          path: ${{ steps.project.outputs.project_dir }}/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
