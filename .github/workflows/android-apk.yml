@@ -43,6 +43,12 @@ jobs:
           test -f "$PROJECT_DIR/app/build.gradle.kts"
           echo "project_dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
 
+      - name: Apply verified OfficeZen clean-start and camera patch
+        run: |
+          base64 -d officezen-fixes.patch.gz.b64 | gzip -dc > /tmp/officezen-fixes.patch
+          patch --dry-run -d "${{ steps.project.outputs.project_dir }}" -p1 < /tmp/officezen-fixes.patch
+          patch -d "${{ steps.project.outputs.project_dir }}" -p1 < /tmp/officezen-fixes.patch
+
       - name: Create CI debug keystore
         working-directory: ${{ steps.project.outputs.project_dir }}
         run: |
